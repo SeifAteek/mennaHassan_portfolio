@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 
+// This tells the app: "If we are live, use the Vercel URL. If local, use 3000."
+const API_BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
+
 export default function Contact() {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-    const [status, setStatus] = useState('idle'); // 'idle', 'sending', 'success', 'error'
-    const API_BASE = 'http://localhost:3000';
+    const [status, setStatus] = useState('idle');
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -13,7 +16,7 @@ export default function Contact() {
         setStatus('sending');
 
         try {
-            const response = await fetch('${API_BASE}/api/contact', {
+            const response = await fetch(`${API_BASE}/api/contact`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -23,8 +26,7 @@ export default function Contact() {
 
             if (response.ok) {
                 setStatus('success');
-                setFormData({ name: '', email: '', message: '' }); // Clear form
-                // Reset success message after 5 seconds
+                setFormData({ name: '', email: '', message: '' });
                 setTimeout(() => setStatus('idle'), 5000);
             } else {
                 setStatus('error');
@@ -39,6 +41,7 @@ export default function Contact() {
         <div className="max-w-xl mx-auto text-center mt-12 md:mt-20 animate-fade-in pb-12">
             <h2 className="text-4xl md:text-5xl font-light mb-8 tracking-wide text-black dark:text-white transition-colors duration-700">Let's Chat!</h2>
 
+            {/* Note: I noticed your screenshot says 05, but earlier code said 0. Make sure this matches exactly! */}
             <p className="mb-8 text-sm tracking-widest text-gray-600 dark:text-gray-400 uppercase transition-colors duration-700">
                 MENNAMHASSAN05@GMAIL.COM
             </p>
