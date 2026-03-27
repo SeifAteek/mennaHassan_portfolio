@@ -192,15 +192,10 @@ app.delete('/api/images/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// --- RENDER PRODUCTION SETUP ---
-// Serve the built React frontend
-app.use(express.static(path.join(__dirname, '../dist')));
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Local backend running on http://localhost:${PORT}`);
+    });
+}
 
-// Catch-all route to hand navigation over to React
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`Render-ready server running on port ${PORT}`);
-});
+export default app;
