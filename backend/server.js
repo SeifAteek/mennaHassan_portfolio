@@ -7,8 +7,13 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,25 +21,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- CLOUDINARY CONFIG ---
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Multer now holds files in memory instead of saving them to your hard drive
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// --- TURSO DB SETUP ---
-// If you leave the URL blank in your .env, it brilliantly falls back to a local file!
 const db = createClient({
     url: process.env.TURSO_DATABASE_URL || 'file:portfolio.db',
     authToken: process.env.TURSO_AUTH_TOKEN
 });
 
-// Initialize DB Tables
 async function initDB() {
     await db.execute(`
     CREATE TABLE IF NOT EXISTS images (
@@ -66,7 +66,6 @@ async function initDB() {
 }
 initDB();
 
-// Helper Function: Stream Buffer to Cloudinary
 const uploadToCloudinary = (buffer) => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -149,7 +148,6 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// Cloudinary Batch Upload Route
 app.post('/api/upload', authenticateToken, upload.array('images', 50), async (req, res) => {
     const { shoot_name, shoot_date } = req.body;
     const files = req.files;
@@ -157,11 +155,9 @@ app.post('/api/upload', authenticateToken, upload.array('images', 50), async (re
     if (!files || files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
 
     try {
-        // 1. Upload all buffers to Cloudinary in parallel
         const uploadPromises = files.map(file => uploadToCloudinary(file.buffer));
         const cloudinaryResults = await Promise.all(uploadPromises);
 
-        // 2. Save the Cloudinary URLs and Public IDs to Turso Database
         const insertPromises = cloudinaryResults.map(result => {
             return db.execute({
                 sql: 'INSERT INTO images (image_url, public_id, shoot_name, shoot_date) VALUES (?, ?, ?, ?)',
@@ -170,15 +166,13 @@ app.post('/api/upload', authenticateToken, upload.array('images', 50), async (re
         });
 
         await Promise.all(insertPromises);
-
-        res.status(201).json({ message: `${files.length} images uploaded to cloud successfully!` });
+        res.status(201).json({ message: `${files.length} images uploaded successfully!` });
     } catch (err) {
         console.error("Cloud upload error:", err);
         res.status(500).json({ error: 'Failed to process images.' });
     }
 });
 
-// Cloudinary Deletion Route
 app.delete('/api/images/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {
@@ -186,9 +180,7 @@ app.delete('/api/images/:id', authenticateToken, async (req, res) => {
         const image = imageResult.rows[0];
 
         if (image) {
-            // Destroy from Cloudinary storage
             await cloudinary.uploader.destroy(image.public_id);
-            // Remove from Database
             await db.execute({ sql: 'DELETE FROM images WHERE id = ?', args: [id] });
             res.json({ message: 'Image deleted from cloud successfully' });
         } else {
@@ -200,11 +192,15 @@ app.delete('/api/images/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// --- VERCEL SERVERLESS EXPORT ---
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        console.log(`Local backend running on http://localhost:${PORT}`);
-    });
-}
+// --- RENDER PRODUCTION SETUP ---
+// Serve the built React frontend
+app.use(express.static(path.join(__dirname, '../dist')));
 
-export default app;
+// Catch-all route to hand navigation over to React
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Render-ready server running on port ${PORT}`);
+});
