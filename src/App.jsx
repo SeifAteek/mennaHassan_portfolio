@@ -9,7 +9,7 @@ const API_BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 
 function App() {
   const [activeTab, setActiveTab] = useState('cover');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -80,7 +80,8 @@ function App() {
         <div className="fixed top-[-10%] left-[-10%] w-64 h-64 md:w-96 md:h-96 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] md:blur-[120px] opacity-50 dark:opacity-20 animate-pulse pointer-events-none"></div>
         <div className="fixed bottom-[-10%] right-[-10%] w-64 h-64 md:w-96 md:h-96 bg-orange-200 dark:bg-orange-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] md:blur-[120px] opacity-50 dark:opacity-20 animate-pulse delay-700 pointer-events-none"></div>
 
-        <header className="sticky top-0 z-50 bg-[#e8e6e1]/70 dark:bg-[#121212]/70 backdrop-blur-xl border-b border-black/5 dark:border-white/5 py-6 md:py-8 flex flex-col items-center transition-colors duration-700">
+        {/* FIXED HEADER PADDING: Changed py-6 to pt-16 pb-6 to push the text down on mobile */}
+        <header className="sticky top-0 z-50 bg-[#e8e6e1]/70 dark:bg-[#121212]/70 backdrop-blur-xl border-b border-black/5 dark:border-white/5 pt-16 pb-6 md:py-8 flex flex-col items-center transition-colors duration-700">
 
           <button
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -89,13 +90,16 @@ function App() {
             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
 
-          <h1 className="text-3xl md:text-5xl font-light tracking-[0.2em] uppercase mb-1 md:mb-2 animate-fade-in relative z-10 text-center px-4">
+          {/* FIXED TEXT SIZING: Dropped text-3xl to text-2xl on mobile so it fits perfectly */}
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-[0.2em] uppercase mb-2 md:mb-2 animate-fade-in relative z-10 text-center px-4 w-full">
             Menna Hassan
           </h1>
-          <p className="text-[10px] md:text-sm tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-6 md:mb-8 uppercase animate-fade-in delay-100 relative z-10 text-center">
-            Fashion Model / content creator
+
+          <p className="text-[9px] md:text-sm tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-2 md:mb-2 uppercase animate-fade-in delay-100 relative z-10 text-center">
+            Fashion Model / Content Creator
           </p>
-          <p className="text-[10px] md:text-sm tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-6 md:mb-8 uppercase animate-fade-in delay-100 relative z-10 text-center">
+
+          <p className="text-[9px] md:text-xs tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-6 md:mb-8 uppercase animate-fade-in delay-100 relative z-10 text-center">
             Height : 165 CM | Weight : 53 KG
           </p>
 
