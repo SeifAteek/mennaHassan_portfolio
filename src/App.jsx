@@ -9,7 +9,7 @@ const API_BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 
 function App() {
   const [activeTab, setActiveTab] = useState('cover');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
